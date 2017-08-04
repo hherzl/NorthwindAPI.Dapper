@@ -20,7 +20,8 @@ namespace NorthwindApi.Dapper.Controllers
             Repository = repository;
         }
 
-        // GET: api/values
+        // GET: api/Northwind/Product
+
         [HttpGet("Product")]
         public async Task<IListResponse<Product>> GetProductsAsync()
         {
@@ -40,7 +41,8 @@ namespace NorthwindApi.Dapper.Controllers
             return response;
         }
 
-        // GET: api/values
+        // GET: api/Northwind/Product
+
         [HttpGet("Product/{id}")]
         public async Task<ISingleResponse<Product>> GetProductAsync(int id)
         {
@@ -51,6 +53,90 @@ namespace NorthwindApi.Dapper.Controllers
             try
             {
                 response.Model = await Repository.GetProductAsync(new Product { ProductID = id });
+            }
+            catch (Exception ex)
+            {
+                response.SetError(Logger, ex);
+            }
+
+            return response;
+        }
+
+        // POST: api/Northwind/Product
+
+        [HttpPost("Product")]
+        public async Task<ISingleResponse<Product>> PostProductAsync([FromBody]Product request)
+        {
+            Logger?.LogDebug("'{0}' has been invoked", nameof(PostProductAsync));
+
+            var response = new SingleResponse<Product>();
+
+            try
+            {
+                await Repository.CreateProductAsync(request);
+
+                response.Model = request;
+            }
+            catch (Exception ex)
+            {
+                response.SetError(Logger, ex);
+            }
+
+            return response;
+        }
+
+        // PUT: api/Northwind/Product
+
+        [HttpPost("Product")]
+        public async Task<ISingleResponse<Product>> PutProductAsync(int id, [FromBody]Product request)
+        {
+            Logger?.LogDebug("'{0}' has been invoked", nameof(PutProductAsync));
+
+            var response = new SingleResponse<Product>();
+
+            try
+            {
+                var entity = await Repository.GetProductAsync(new Product { ProductID = id });
+
+                if (entity != null)
+                {
+                    entity.ProductName = request.ProductName;
+                    entity.SupplierID = request.SupplierID;
+                    entity.CategoryID = request.CategoryID;
+                    entity.UnitPrice = request.UnitPrice;
+
+                    await Repository.UpdateProductAsync(request);
+
+                    response.Model = request;
+                }
+            }
+            catch (Exception ex)
+            {
+                response.SetError(Logger, ex);
+            }
+
+            return response;
+        }
+
+        // DELETE: api/Northwind/Product
+
+        [HttpPost("Product")]
+        public async Task<ISingleResponse<Product>> DeleteProductAsync(int id)
+        {
+            Logger?.LogDebug("'{0}' has been invoked", nameof(DeleteProductAsync));
+
+            var response = new SingleResponse<Product>();
+
+            try
+            {
+                var entity = await Repository.GetProductAsync(new Product { ProductID = id });
+
+                if (entity != null)
+                {
+                    await Repository.DeleteProductAsync(entity);
+
+                    response.Model = entity;
+                }
             }
             catch (Exception ex)
             {
