@@ -40,13 +40,12 @@ namespace NorthwindApi.Dapper.Models
                 query.Append(" (@supplierID is null or [SupplierID] = @supplierID) and ");
                 query.Append(" (@categoryID is null or [CategoryID] = @categoryID) ");
 
-                var parameters = new
-                {
-                    supplierID = supplierID,
-                    categoryID = categoryID
-                };
+                var parameters = new DynamicParameters();
 
-                return await connection.QueryAsync<Product>(query.ToString(), parameters);
+                parameters.Add("supplierID", supplierID);
+                parameters.Add("categoryID", categoryID);
+
+                return await connection.QueryAsync<Product>(new CommandDefinition(query.ToString(), parameters));
             }
         }
 
@@ -72,10 +71,9 @@ namespace NorthwindApi.Dapper.Models
                 query.Append("where ");
                 query.Append(" [ProductID] = @productID ");
 
-                var parameters = new
-                {
-                    productID = entity.ProductID
-                };
+                var parameters = new DynamicParameters();
+
+                parameters.Add("productID", entity.ProductID);
 
                 return await connection.QueryFirstOrDefaultAsync<Product>(query.ToString(), parameters);
             }
@@ -127,7 +125,7 @@ namespace NorthwindApi.Dapper.Models
                 parameters.Add("discontinued", entity.Discontinued);
                 parameters.Add("productID", dbType: DbType.Int32, direction: ParameterDirection.Output);
 
-                var affectedRows = await connection.ExecuteAsync(query.ToString(), parameters);
+                var affectedRows = await connection.ExecuteAsync(new CommandDefinition(query.ToString(), parameters));
 
                 entity.ProductID = parameters.Get<int>("productID");
 
@@ -167,7 +165,7 @@ namespace NorthwindApi.Dapper.Models
                 parameters.Add("reorderLevel", entity.ReorderLevel);
                 parameters.Add("productID", entity.ProductID);
 
-                return await connection.ExecuteAsync(query.ToString(), parameters);
+                return await connection.ExecuteAsync(new CommandDefinition(query.ToString(), parameters));
             }
         }
 
@@ -186,7 +184,7 @@ namespace NorthwindApi.Dapper.Models
 
                 parameters.Add("productID", entity.ProductID);
 
-                return await connection.ExecuteAsync(query.ToString(), parameters);
+                return await connection.ExecuteAsync(new CommandDefinition(query.ToString(), parameters));
             }
         }
     }

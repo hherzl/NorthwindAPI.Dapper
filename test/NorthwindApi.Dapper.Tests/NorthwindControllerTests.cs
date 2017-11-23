@@ -21,6 +21,7 @@ namespace NorthwindApi.Dapper.Tests
             var response = await controller.GetProductsAsync();
 
             // Asert
+            Assert.False(response.DidError);
             Assert.True(response.Model.Count() > 0);
         }
 
@@ -37,6 +38,7 @@ namespace NorthwindApi.Dapper.Tests
             var response = await controller.GetProductsAsync(supplierID: supplierID);
 
             // Asert
+            Assert.False(response.DidError);
             Assert.True(response.Model.Count() > 0);
             Assert.True(response.Model.Where(item => item.SupplierID == supplierID).Count() == response.Model.Count());
         }
@@ -54,6 +56,7 @@ namespace NorthwindApi.Dapper.Tests
             var response = await controller.GetProductsAsync(categoryID: categoryID);
 
             // Asert
+            Assert.False(response.DidError);
             Assert.True(response.Model.Count() > 0);
             Assert.True(response.Model.Where(item => item.CategoryID == categoryID).Count() == response.Model.Count());
         }
@@ -71,6 +74,7 @@ namespace NorthwindApi.Dapper.Tests
             var response = await controller.GetProductAsync(request);
 
             // Asert
+            Assert.False(response.DidError);
             Assert.True(response.Model != null);
         }
 
@@ -87,6 +91,7 @@ namespace NorthwindApi.Dapper.Tests
             var response = await controller.GetProductAsync(request);
 
             // Asert
+            Assert.False(response.DidError);
             Assert.True(response.Model == null);
         }
 
@@ -109,6 +114,7 @@ namespace NorthwindApi.Dapper.Tests
             var response = await controller.PostProductAsync(request);
 
             // Asert
+            Assert.False(response.DidError);
             Assert.True(response.Model.ProductID.HasValue);
         }
 
