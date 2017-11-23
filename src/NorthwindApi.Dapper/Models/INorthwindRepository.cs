@@ -5,7 +5,7 @@ namespace NorthwindApi.Dapper.Models
 {
     public interface INorthwindRepository
     {
-        Task<IEnumerable<Product>> GetProductsAsync();
+        Task<IEnumerable<Product>> GetProductsAsync(int? supplierID = null, int? categoryID = null);
 
         Task<Product> GetProductAsync(Product entity);
 

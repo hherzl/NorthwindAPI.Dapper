@@ -17,7 +17,7 @@ namespace NorthwindApi.Dapper.Models
 
         public string ConnectionString { get; }
 
-        public async Task<IEnumerable<Product>> GetProductsAsync()
+        public async Task<IEnumerable<Product>> GetProductsAsync(int? supplierID = null, int? categoryID = null)
         {
             using (var connection = new SqlConnection(ConnectionString))
             {
@@ -36,8 +36,17 @@ namespace NorthwindApi.Dapper.Models
                 query.Append(" [Discontinued] ");
                 query.Append("from ");
                 query.Append(" [dbo].[Products] ");
+                query.Append("where ");
+                query.Append(" (@supplierID is null or [SupplierID] = @supplierID) and ");
+                query.Append(" (@categoryID is null or [CategoryID] = @categoryID) ");
 
-                return await connection.QueryAsync<Product>(query.ToString());
+                var parameters = new
+                {
+                    supplierID = supplierID,
+                    categoryID = categoryID
+                };
+
+                return await connection.QueryAsync<Product>(query.ToString(), parameters);
             }
         }
 

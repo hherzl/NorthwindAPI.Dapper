@@ -25,6 +25,40 @@ namespace NorthwindApi.Dapper.Tests
         }
 
         [Fact]
+        public async Task TestGetProductsBySupplierAsync()
+        {
+            // Arrange
+            var logger = LoggerMocker.GetLogger<NorthwindController>();
+            var repository = RepositoryMocker.GetNorthwindRepository();
+            var controller = new NorthwindController(logger, repository);
+            var supplierID = 1;
+
+            // Act
+            var response = await controller.GetProductsAsync(supplierID: supplierID);
+
+            // Asert
+            Assert.True(response.Model.Count() > 0);
+            Assert.True(response.Model.Where(item => item.SupplierID == supplierID).Count() == response.Model.Count());
+        }
+
+        [Fact]
+        public async Task TestGetProductsByCategoryAsync()
+        {
+            // Arrange
+            var logger = LoggerMocker.GetLogger<NorthwindController>();
+            var repository = RepositoryMocker.GetNorthwindRepository();
+            var controller = new NorthwindController(logger, repository);
+            var categoryID = 1;
+
+            // Act
+            var response = await controller.GetProductsAsync(categoryID: categoryID);
+
+            // Asert
+            Assert.True(response.Model.Count() > 0);
+            Assert.True(response.Model.Where(item => item.CategoryID == categoryID).Count() == response.Model.Count());
+        }
+
+        [Fact]
         public async Task TestGetProductAsync()
         {
             // Arrange

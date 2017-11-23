@@ -23,7 +23,7 @@ namespace NorthwindApi.Dapper.Controllers
         // GET: api/Northwind/Product
 
         [HttpGet("Product")]
-        public async Task<IListResponse<Product>> GetProductsAsync()
+        public async Task<IListResponse<Product>> GetProductsAsync(int? supplierID = null, int? categoryID = null)
         {
             Logger?.LogDebug("'{0}' has been invoked", nameof(GetProductsAsync));
 
@@ -31,7 +31,7 @@ namespace NorthwindApi.Dapper.Controllers
 
             try
             {
-                response.Model = (await Repository.GetProductsAsync()).ToList();
+                response.Model = (await Repository.GetProductsAsync(supplierID, categoryID)).ToList();
             }
             catch (Exception ex)
             {
