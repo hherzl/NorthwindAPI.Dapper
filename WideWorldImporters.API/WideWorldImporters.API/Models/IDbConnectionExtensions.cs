@@ -1,69 +1,45 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Data;
-using System.Data.SqlClient;
 using System.Text;
 using System.Threading.Tasks;
 using Dapper;
 
 namespace WideWorldImporters.API.Models
 {
-    public class AppSettings
+    public static class IDbConnectionExtensions
     {
-        public string ConnectionString { get; set; }
-    }
-
-    public static class AppSettingsExtensions
-    {
-        public static IDbConnection GetConnection(this AppSettings appSettings)
-            => new SqlConnection(appSettings.ConnectionString);
-    }
-
-    public interface IWarehouseRepository
-    {
-        Task<IEnumerable<StockItem>> GetStockItemsAsync(int pageSize = 10, int pageNumber = 1, int? lastEditedBy = null, int? colorID = null, int? outerPackageID = null, int? supplierID = null, int? unitPackageID = null);
-
-        Task<StockItem> GetStockItemAsync(StockItem entity);
-
-        Task<StockItem> GetStockItemByStockItemNameAsync(StockItem entity);
-
-        Task<int> AddStockItemAsync(StockItem entity);
-
-        Task<int> UpdateStockItemAsync(StockItem entity);
-
-        Task<int> RemoveStockItemAsync(StockItem entity);
-    }
-
-    public abstract class Repository : IDisposable
-    {
-        protected bool Disposed;
-
-        public Repository(IDbConnection connection)
+        public static async Task<int> CountStockItemsAsync(this IDbConnection connection, int? lastEditedBy = null, int? colorID = null, int? outerPackageID = null, int? supplierID = null, int? unitPackageID = null)
         {
-            Connection = connection;
+            // Create string builder for query
+            var query = new StringBuilder();
+
+            // Create sql statement
+            query.Append(" select ");
+            query.Append("  count([StockItemID]) ");
+            query.Append(" from ");
+            query.Append("  [Warehouse].[StockItems] ");
+            query.Append(" where ");
+            query.Append("  (@lastEditedBy is null or [LastEditedBy] = @lastEditedBy) and ");
+            query.Append("  (@colorID is null or [ColorID] = @colorID) and ");
+            query.Append("  (@outerPackageID is null or [OuterPackageID] = @outerPackageID) and ");
+            query.Append("  (@supplierID is null or [SupplierID] = @supplierID) and ");
+            query.Append("  (@unitPackageID is null or [UnitPackageID] = @unitPackageID)  ");
+
+            // Create parameters collection
+            var parameters = new DynamicParameters();
+
+            // Add parameters to collection
+            parameters.Add("@lastEditedBy", lastEditedBy);
+            parameters.Add("@colorID", colorID);
+            parameters.Add("@outerPackageID", outerPackageID);
+            parameters.Add("@supplierID", supplierID);
+            parameters.Add("@unitPackageID", unitPackageID);
+
+            // Retrieve result from database and convert to typed list
+            return await connection.ExecuteScalarAsync<int>(new CommandDefinition(query.ToString(), parameters));
         }
 
-        protected IDbConnection Connection { get; }
-
-        public void Dispose()
-        {
-            if (Disposed)
-                return;
-
-            Connection?.Dispose();
-
-            Disposed = true;
-        }
-    }
-
-    public class WarehouseRepository : Repository, IWarehouseRepository
-    {
-        public WarehouseRepository(IDbConnection connection)
-            : base(connection)
-        {
-        }
-
-        public async Task<IEnumerable<StockItem>> GetStockItemsAsync(int pageSize = 10, int pageNumber = 1, int? lastEditedBy = null, int? colorID = null, int? outerPackageID = null, int? supplierID = null, int? unitPackageID = null)
+        public static async Task<IEnumerable<StockItem>> GetStockItemsAsync(this IDbConnection connection, int pageSize = 10, int pageNumber = 1, int? lastEditedBy = null, int? colorID = null, int? outerPackageID = null, int? supplierID = null, int? unitPackageID = null)
         {
             // Create string builder for query
             var query = new StringBuilder();
@@ -120,10 +96,10 @@ namespace WideWorldImporters.API.Models
             parameters.Add("@unitPackageID", unitPackageID);
 
             // Retrieve result from database and convert to typed list
-            return await Connection.QueryAsync<StockItem>(new CommandDefinition(query.ToString(), parameters));
+            return await connection.QueryAsync<StockItem>(new CommandDefinition(query.ToString(), parameters));
         }
 
-        public async Task<StockItem> GetStockItemAsync(StockItem entity)
+        public static async Task<StockItem> GetStockItemAsync(this IDbConnection connection, StockItem entity)
         {
             // Create string builder for query
             var query = new StringBuilder();
@@ -166,10 +142,10 @@ namespace WideWorldImporters.API.Models
             parameters.Add("stockItemID", entity.StockItemID);
 
             // Retrieve result from database and convert to entity class
-            return await Connection.QueryFirstOrDefaultAsync<StockItem>(query.ToString(), parameters);
+            return await connection.QueryFirstOrDefaultAsync<StockItem>(query.ToString(), parameters);
         }
 
-        public async Task<StockItem> GetStockItemByStockItemNameAsync(StockItem entity)
+        public static async Task<StockItem> GetStockItemByStockItemNameAsync(this IDbConnection connection, StockItem entity)
         {
             // Create string builder for query
             var query = new StringBuilder();
@@ -212,10 +188,10 @@ namespace WideWorldImporters.API.Models
             parameters.Add("stockItemName", entity.StockItemName);
 
             // Retrieve result from database and convert to entity class
-            return await Connection.QueryFirstOrDefaultAsync<StockItem>(query.ToString(), parameters);
+            return await connection.QueryFirstOrDefaultAsync<StockItem>(query.ToString(), parameters);
         }
 
-        public async Task<int> AddStockItemAsync(StockItem entity)
+        public static async Task<int> AddStockItemAsync(this IDbConnection connection, StockItem entity)
         {
             // Create string builder for query
             var query = new StringBuilder();
@@ -307,10 +283,10 @@ namespace WideWorldImporters.API.Models
             parameters.Add("validTo", entity.ValidTo);
 
             // Execute query in database
-            return await Connection.ExecuteAsync(new CommandDefinition(query.ToString(), parameters));
+            return await connection.ExecuteAsync(new CommandDefinition(query.ToString(), parameters));
         }
 
-        public async Task<int> UpdateStockItemAsync(StockItem entity)
+        public static async Task<int> UpdateStockItemAsync(this IDbConnection connection, StockItem entity)
         {
             // Create string builder for query
             var query = new StringBuilder();
@@ -375,10 +351,10 @@ namespace WideWorldImporters.API.Models
             parameters.Add("stockItemID", entity.StockItemID);
 
             // Execute query in database
-            return await Connection.ExecuteAsync(new CommandDefinition(query.ToString(), parameters));
+            return await connection.ExecuteAsync(new CommandDefinition(query.ToString(), parameters));
         }
 
-        public async Task<int> RemoveStockItemAsync(StockItem entity)
+        public static async Task<int> RemoveStockItemAsync(this IDbConnection connection, StockItem entity)
         {
             // Create string builder for query
             var query = new StringBuilder();
@@ -396,7 +372,7 @@ namespace WideWorldImporters.API.Models
             parameters.Add("stockItemID", entity.StockItemID);
 
             // Execute query in database
-            return await Connection.ExecuteAsync(new CommandDefinition(query.ToString(), parameters));
+            return await connection.ExecuteAsync(new CommandDefinition(query.ToString(), parameters));
         }
     }
 }

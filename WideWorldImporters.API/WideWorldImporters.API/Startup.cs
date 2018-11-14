@@ -31,9 +31,6 @@ namespace WideWorldImporters.API
 
             // Logging for controller
             services.AddScoped<ILogger, Logger<WarehouseController>>();
-
-            // Repository
-            services.AddScoped<IWarehouseRepository, WarehouseRepository>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

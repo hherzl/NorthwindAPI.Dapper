@@ -32,10 +32,11 @@ namespace WideWorldImporters.API.Controllers
 
             try
             {
-                using (var repository = new WarehouseRepository(AppSettings.GetConnection()))
+                using (var connection = AppSettings.CreateConnection())
                 {
-                    // Retrieve stock items from database
-                    response.Model = await repository.GetStockItemsAsync(pageSize, pageNumber);
+                    response.ItemsCount = await connection.CountStockItemsAsync(lastEditedBy, colorID, outerPackageID, supplierID);
+
+                    response.Model = await connection.GetStockItemsAsync(pageSize, pageNumber, lastEditedBy, colorID, outerPackageID, supplierID);
 
                     Logger?.LogInformation("The stock items have been retrieved successfully.");
                 }
@@ -63,10 +64,9 @@ namespace WideWorldImporters.API.Controllers
 
             try
             {
-                using (var repository = new WarehouseRepository(AppSettings.GetConnection()))
+                using (var connection = AppSettings.CreateConnection())
                 {
-                    // Retrieve the entity by id
-                    response.Model = await repository.GetStockItemAsync(new StockItem(id));
+                    response.Model = await connection.GetStockItemAsync(new StockItem(id));
 
                     Logger?.LogInformation("The stock item have been retrieved successfully.");
                 }
